@@ -1,30 +1,25 @@
 'use client';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams, usePathname,useRouter } from 'next/navigation';
+import {MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import {useSearchParams, usePathname,useRouter } from 'next/navigation';
 import {useDebouncedCallback} from 'use-debounce';
 
 export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams(); 
   const pathname = usePathname();
-  const {replace } = useRouter();
+  const {replace} = useRouter();
   
-  function handleSearch(term: string) {
-    const handleSearch = useDebouncedCallback((term: string) => {
-    console.log('Searching... ${term}');
+  const handleSearch = useDebouncedCallback((term: string) => {
+    // console.log('Searching... ${term}');
     const params = new URLSearchParams(searchParams);
+        params.set('page', '1');
     if (term) {
       params.set('query', term);
     } else {
       params.delete('query');
     }
     replace(`${pathname}?${params.toString()}`);
- // Use replace to update the URL without adding a new entry to the history stack
-    // router.push(`${pathname}?${params.toString()}`); // Use push if you want to add a new entry to the history stack
-   
-    
-  }, 300); // Adjust the debounce time as needed
-  // Update the URL with the new search term
+    }, 300); // Adjust the debounce time as needed
 
   return (
     <div className="relative flex flex-1 flex-shrink-0">
@@ -43,5 +38,4 @@ export default function Search({ placeholder }: { placeholder: string }) {
       <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
     </div>
   );
-}
 }
