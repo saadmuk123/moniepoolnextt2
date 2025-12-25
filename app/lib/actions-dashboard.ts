@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import postgres from 'postgres';
-import { fetchGroupDetails } from './actions-groups';
+
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 

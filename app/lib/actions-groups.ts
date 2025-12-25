@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import postgres from 'postgres';
 import { auth } from '@/auth';
-import { Group } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 

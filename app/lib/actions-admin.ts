@@ -25,23 +25,22 @@ export async function fetchAdminStats() {
     await requireAdmin(); // Enforce security
 
     try {
-        const totalUsers = await sql`SELECT COUNT(*) as count FROM users`;
-        const totalGroups = await sql`SELECT COUNT(*) as count FROM groups`;
-        const totalContributions = await sql`SELECT SUM(amount) as total FROM contributions`;
-        // Total Volume could be sum of all group amounts * members, or just total wallet balances? 
-        // Let's use Total Contributions as "Processed Volume".
-
-        const allUsers = await sql`
-            SELECT id, name, email, role, wallet_balance, 
-            (SELECT COUNT(*) FROM group_members WHERE user_id = users.id) as group_count
-            FROM users
-            ORDER BY name ASC
-        `;
+        const [totalUsersRes, totalGroupsRes, totalContributionsRes, allUsers] = await Promise.all([
+            sql`SELECT COUNT(*) as count FROM users`,
+            sql`SELECT COUNT(*) as count FROM groups`,
+            sql`SELECT SUM(amount) as total FROM contributions`,
+            sql`
+                SELECT id, name, email, role, wallet_balance, 
+                (SELECT COUNT(*) FROM group_members WHERE user_id = users.id) as group_count
+                FROM users
+                ORDER BY name ASC
+            `
+        ]);
 
         return {
-            totalUsers: Number(totalUsers[0].count),
-            totalGroups: Number(totalGroups[0].count),
-            totalVolume: Number(totalContributions[0].total || 0),
+            totalUsers: Number(totalUsersRes[0].count),
+            totalGroups: Number(totalGroupsRes[0].count),
+            totalVolume: Number(totalContributionsRes[0].total || 0),
             users: allUsers.map(u => ({
                 ...u,
                 wallet_balance: Number(u.wallet_balance),
