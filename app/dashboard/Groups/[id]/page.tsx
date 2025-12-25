@@ -1,17 +1,18 @@
 import { fetchGroupDetails, joinGroup, payoutToMember, recordContribution } from '@/app/lib/actions-groups';
 import { lusitana } from '@/app/ui/fonts';
 import { Button } from '@/app/ui/button';
+import { Member } from '@/app/lib/definitions';
 import { UserCircleIcon, CalendarIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/auth';
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
-    // @ts-ignore
+    // @ts-expect-error: Inferred type from server action is complex
     const { group, members, stats } = await fetchGroupDetails(id);
     const session = await auth();
     const currentUserEmail = session?.user?.email;
 
-    const isMember = members.some((m: any) => m.email === currentUserEmail);
+    const isMember = members.some((m: Member) => m.email === currentUserEmail);
     const isFull = group.max_members && members.length >= group.max_members;
 
     return (
@@ -80,7 +81,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {members.map((member: any) => (
+                            {members.map((member) => (
                                 <tr key={member.user_id} className="hover:bg-gray-50/50">
                                     <td className="whitespace-nowrap px-4 py-3 sm:pl-6 font-mono text-gray-500">#{member.position}</td>
                                     <td className="whitespace-nowrap px-4 py-3">
