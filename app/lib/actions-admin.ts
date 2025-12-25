@@ -1,10 +1,8 @@
 'use server';
 
 import { auth } from '@/auth';
-import postgres from 'postgres';
+import sql from './db';
 import { redirect } from 'next/navigation';
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 
 // Check if current user is admin
 export async function requireAdmin() {

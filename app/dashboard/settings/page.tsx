@@ -67,7 +67,7 @@ export default async function Page() {
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-semibold">Notifications</h3>
-                                        <p className="text-xs text-gray-500">Receive alerts when it's your turn.</p>
+                                        <p className="text-xs text-gray-500">Receive alerts when it&apos;s your turn.</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">

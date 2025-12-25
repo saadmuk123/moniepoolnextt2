@@ -3,10 +3,8 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import postgres from 'postgres';
+import sql from './db';
 import { auth } from '@/auth';
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 
 const CreateGroupSchema = z.object({
     name: z.string().min(3),

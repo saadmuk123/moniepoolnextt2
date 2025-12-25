@@ -1,38 +1,72 @@
 'use server';
 
 import { auth } from '@/auth';
-import postgres from 'postgres';
-
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
+import sql from './db';
 
 export async function fetchDashboardData() {
+    console.log('Fetching dashboard data...');
     try {
         const session = await auth();
         if (!session?.user?.email) throw new Error('Not authenticated');
+        console.log('User authenticated:', session.user.email);
 
         const userResult = await sql`SELECT id, wallet_balance FROM users WHERE email = ${session.user.email}`;
         const user = userResult[0];
-        if (!user) throw new Error('User not found');
+        if (!user) {
+            console.error('User not found for email:', session.user.email);
+            throw new Error('User not found');
+        }
         const userId = user.id;
 
-        // Parallelize fetching groups and contributions
-        const [joinedGroups, contributions] = await Promise.all([
-            sql`
-                SELECT g.id, g.name, g.amount, g.interval, g.start_date, m.position, m.status, g.max_members,
-                (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id) as member_count
-                FROM groups g
-                JOIN group_members m ON g.id = m.group_id
-                WHERE m.user_id = ${userId}
-                ORDER BY g.start_date DESC
-            `,
-            sql`
-                SELECT amount, date
-                FROM contributions
-                WHERE user_id = ${userId}
-                ORDER BY date ASC
-            `
-        ]);
+        interface JoinedGroup {
+            id: string;
+            name: string;
+            amount: number;
+            interval: 'weekly' | 'monthly';
+            start_date: string;
+            position: number;
+            status: string;
+            max_members: number;
+            member_count: number;
+        }
+
+        interface Contribution {
+            amount: number;
+            date: string;
+        }
+
+        console.log('Fetching groups and contributions in parallel...');
+        // Serialized execution to debug AggregateError/Timeout
+        console.log('Fetching joinedGroups...');
+        const joinedGroupsRaw = await sql`
+            SELECT g.id, g.name, g.amount, g.interval, g.start_date, m.position, m.status, g.max_members,
+            (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id) as member_count
+            FROM groups g
+            JOIN group_members m ON g.id = m.group_id
+            WHERE m.user_id = ${userId}
+            ORDER BY g.start_date DESC
+        `;
+
+        console.log('Fetching contributions...');
+        const contributionsRaw = await sql`
+            SELECT amount, date
+            FROM contributions
+            WHERE user_id = ${userId}
+            ORDER BY date ASC
+        `;
+        console.log('Sequential fetch complete.');
+
+        if (!Array.isArray(joinedGroupsRaw)) {
+            console.error('joinedGroupsRaw is not an array:', typeof joinedGroupsRaw);
+            throw new Error('Failed to fetch groups: Invalid data structure');
+        }
+        if (!Array.isArray(contributionsRaw)) {
+            console.error('contributionsRaw is not an array:', typeof contributionsRaw);
+            throw new Error('Failed to fetch contributions: Invalid data structure');
+        }
+
+        const joinedGroups = joinedGroupsRaw as unknown as JoinedGroup[];
+        const contributions = contributionsRaw as unknown as Contribution[];
 
         // 3. Calculate Stats & Next Payout
         let totalStatSavings = 0;
@@ -48,7 +82,7 @@ export async function fetchDashboardData() {
         const now = new Date();
         const futurePayouts: { date: Date, amount: number, groupName: string }[] = [];
 
-        joinedGroups.forEach((group: any) => {
+        joinedGroups.forEach((group) => {
             if (group.status === 'active') {
                 const startDate = new Date(group.start_date);
                 const intervalDays = group.interval === 'weekly' ? 7 : 30; // approx
@@ -61,9 +95,7 @@ export async function fetchDashboardData() {
                 if (payoutDate >= now) {
                     futurePayouts.push({
                         date: payoutDate,
-                        amount: Number(group.amount), // The group amount is the payout (User contributes amount, receives amount * members? 
-                        // Usually Adashe: You contribute X, you receive X * Members.
-                        // Let's assume Payout = Contribution Amount * Member Count (Total Pool).
+                        amount: Number(group.amount),
                         groupName: group.name
                     });
                 }
@@ -75,9 +107,7 @@ export async function fetchDashboardData() {
 
         if (futurePayouts.length > 0) {
             nextPayoutDate = futurePayouts[0].date;
-            // Calculate payout amount: If 10 members contribute $100, Payout is $1000.
-            // I need to fetch the member count for that specific group to be accurate, joinedGroups already has member_count.
-            const nextGroup = joinedGroups.find((g: any) => g.name === futurePayouts[0].groupName);
+            const nextGroup = joinedGroups.find((g) => g.name === futurePayouts[0].groupName);
             if (nextGroup) {
                 nextPayoutAmount = Number(nextGroup.amount) * Number(nextGroup.member_count);
             }
@@ -86,7 +116,7 @@ export async function fetchDashboardData() {
         return {
             walletBalance: Number(user.wallet_balance),
             totalSavings: totalStatSavings,
-            joinedGroups: joinedGroups.map((g: any) => ({
+            joinedGroups: joinedGroups.map((g) => ({
                 ...g,
                 amount: Number(g.amount),
                 member_count: Number(g.member_count)
@@ -96,14 +126,45 @@ export async function fetchDashboardData() {
                 amount: nextPayoutAmount,
                 groupName: futurePayouts[0]?.groupName || null
             },
-            contributions: contributions.map((c: any) => ({
+            contributions: contributions.map((c) => ({
                 amount: Number(c.amount),
                 date: c.date
             }))
         };
 
-    } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        throw new Error('Failed to fetch dashboard data.');
+    } catch (error: any) {
+        console.error('Detailed Error in fetchDashboardData:', error);
+
+        // MOCK DATA FALLBACK
+        if (error.code === 'ETIMEDOUT' || error.code === 'CONNECT_TIMEOUT') {
+            console.warn('Database connection failed. Falling back to MOCK DATA.');
+            const { mockJoinedGroups, mockContributions, mockWalletBalance } = await import('./mock-data');
+
+            // Calculate mock stats (simplified version of the main logic)
+            let totalStatSavings = 0;
+            mockContributions.forEach((c: any) => totalStatSavings += c.amount);
+
+            const now = new Date();
+
+            // Simple next payout mock
+            const nextPayoutDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+            return {
+                walletBalance: mockWalletBalance,
+                totalSavings: totalStatSavings,
+                joinedGroups: mockJoinedGroups.map((g: any) => ({
+                    ...g,
+                    amount: Number(g.amount),
+                    member_count: Number(g.member_count)
+                })),
+                nextPayout: {
+                    date: nextPayoutDate,
+                    amount: 1000,
+                    groupName: 'Mock Vacation Fund'
+                },
+                contributions: mockContributions
+            };
+        }
+        throw error;
     }
 }

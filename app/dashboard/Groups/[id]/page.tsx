@@ -1,18 +1,28 @@
-import { fetchGroupDetails, joinGroup, payoutToMember, recordContribution } from '@/app/lib/actions-groups';
+import { fetchGroupDetails, joinGroup, payoutToMember } from '@/app/lib/actions-groups';
+import { ContributionButton } from '@/app/ui/groups/contribution-button';
 import { lusitana } from '@/app/ui/fonts';
 import { Button } from '@/app/ui/button';
 import { Member } from '@/app/lib/definitions';
 import { UserCircleIcon, CalendarIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/auth';
+import { notFound } from 'next/navigation';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }) {
     const { id } = await params;
     // @ts-expect-error: Inferred type from server action is complex
-    const { group, members, stats } = await fetchGroupDetails(id);
+    const groupData = await fetchGroupDetails(id);
+
+    if (!groupData) {
+        notFound();
+    }
+
+    const { members, stats } = groupData;
+    const group = groupData;
+
     const session = await auth();
     const currentUserEmail = session?.user?.email;
 
-    const isMember = members.some((m: Member) => m.email === currentUserEmail);
+    const isMember = members.some((m) => m.email === currentUserEmail);
     const isFull = group.max_members && members.length >= group.max_members;
 
     return (
@@ -82,7 +92,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {members.map((member) => (
-                                <tr key={member.user_id} className="hover:bg-gray-50/50">
+                                <tr key={member.id} className="hover:bg-gray-50/50">
                                     <td className="whitespace-nowrap px-4 py-3 sm:pl-6 font-mono text-gray-500">#{member.position}</td>
                                     <td className="whitespace-nowrap px-4 py-3">
                                         <div className="flex items-center gap-2">
@@ -109,18 +119,14 @@ export default async function Page({ params }: { params: { id: string } }) {
                                     <td className="whitespace-nowrap px-4 py-3 space-y-2">
                                         {/* Payout Action */}
                                         {member.status === 'active' && (
-                                            <form action={payoutToMember.bind(null, id, member.user_id)}>
+                                            <form action={payoutToMember.bind(null, id, member.id)}>
                                                 <Button type="submit" className="bg-green-600 hover:bg-green-500 h-8 px-3 text-xs w-full">
                                                     Pay Out
                                                 </Button>
                                             </form>
                                         )}
                                         {/* Contribution Action */}
-                                        <form action={recordContribution.bind(null, id, member.user_id, group.amount)}>
-                                            <Button type="submit" className="bg-blue-600 hover:bg-blue-500 h-8 px-3 text-xs w-full">
-                                                Mark Contributed
-                                            </Button>
-                                        </form>
+                                        <ContributionButton groupId={id} userId={member.id} amount={group.amount} />
                                     </td>
                                 </tr>
                             ))}

@@ -2,10 +2,8 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import postgres from 'postgres';
+import sql from './db';
 import { auth } from '@/auth';
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 
 const UpdateSettingsSchema = z.object({
     bank_name: z.string().optional(),

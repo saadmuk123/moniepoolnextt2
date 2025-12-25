@@ -9,7 +9,7 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
+import sql from './db';
 
 export async function fetchRevenue() {
   try {
@@ -219,19 +219,49 @@ export async function fetchFilteredCustomers(query: string) {
 }
 
 export async function fetchUserProfile(email: string) {
+  console.log('Fetching user profile for:', email);
   try {
-    const user = await sql`SELECT id, name, email, wallet_balance FROM users WHERE email=${email}`;
-    // Mock bank details since they don't exist in DB
-    const bankDetails = {
-      accountNumber: '12345678',
-      sortCode: '12-34-56',
-      status: 'Active',
-      balance: (user[0].wallet_balance || 0) / 100, // Use actual wallet balance
+    const userResult = await sql`
+        SELECT id, name, email, wallet_balance, bank_name, account_number, notifications_enabled 
+        FROM users 
+        WHERE email=${email}
+    `;
+    const user = userResult[0];
+    if (!user) {
+      console.error('User not found for email:', email);
+      throw new Error('User not found');
+    }
+    console.log('User found:', user.id);
+
+    console.log('Fetching detailed stats...');
+    const [groupCount, contributionSum, recentActivity] = await Promise.all([
+      sql`SELECT COUNT(*) FROM group_members WHERE user_id = ${user.id} AND status = 'active'`,
+      sql`SELECT SUM(amount) FROM contributions WHERE user_id = ${user.id}`,
+      sql`
+            SELECT c.amount, c.date, g.name as group_name
+            FROM contributions c
+            JOIN groups g ON c.group_id = g.id
+            WHERE c.user_id = ${user.id}
+            ORDER BY c.date DESC
+            LIMIT 5
+        `
+    ]);
+    console.log('Stats fetched successfully');
+
+    return {
+      ...user,
+      balance: (user.wallet_balance || 0) / 100,
+      total_groups: Number(groupCount[0].count),
+      total_contributed: (Number(contributionSum[0].sum) || 0) / 100,
+      recent_activity: recentActivity.map((a: any) => ({
+        ...a,
+        amount: Number(a.amount) / 100,
+        date: new Date(a.date).toLocaleDateString()
+      })),
       currency: 'USD'
     };
-    return { ...user[0], ...bankDetails };
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch user profile.');
+    console.error('Detailed Error in fetchUserProfile:', error);
+    throw error; // Rethrow original error to see the message in UI/Logs
   }
 }

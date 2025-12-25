@@ -5,7 +5,7 @@ import { updateSettings } from '@/app/lib/actions-user';
 import { Button } from '@/app/ui/button';
 import { BuildingLibraryIcon, BellIcon } from '@heroicons/react/24/outline';
 
-export default function SettingsForm({ settings }: { settings: any }) {
+export default function SettingsForm({ settings }) {
     const initialState = { message: '', errors: {} };
     const [state, dispatch] = useActionState(updateSettings, initialState);
 
@@ -55,7 +55,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
                         </div>
                         <div>
                             <h3 className="text-sm font-semibold">Notifications</h3>
-                            <p className="text-xs text-gray-500">Receive alerts when it's your turn.</p>
+                            <p className="text-xs text-gray-500">Receive alerts when it&apos;s your turn.</p>
                         </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
