@@ -41,7 +41,10 @@ export default async function Page() {
                         </div>
                     </div>
 
-                    <form action={updateSettings} className="space-y-4">
+                    <form action={async (formData: FormData) => {
+                        'use server';
+                        await updateSettings(null, formData);
+                    }} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="bank_name" className="block text-sm font-medium text-gray-700 mb-1">

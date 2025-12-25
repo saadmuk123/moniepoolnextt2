@@ -1,0 +1,53 @@
+
+> @ build C:\Users\amirs\Desktop\nextjs-dashboard
+> next build
+
+ÔÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\amirs\pnpm-lock.yaml as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\amirs\Desktop\nextjs-dashboard\pnpm-lock.yaml
+
+Ôû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 3.7s
+  Running TypeScript ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/15) ...
+  Generating static pages using 19 workers (3/15) 
+  Generating static pages using 19 workers (7/15) 
+  Generating static pages using 19 workers (11/15) 
+Ô£ô Generating static pages using 19 workers (15/15) in 8.8s
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/admin/export-audit
+Ôö£ ãÆ /dashboard
+Ôö£ ãÆ /dashboard/admin
+Ôö£ Ôùï /dashboard/customers
+Ôö£ ãÆ /dashboard/groups
+Ôö£ ãÆ /dashboard/groups/[id]
+Ôö£ Ôùï /dashboard/groups/create
+Ôö£ ãÆ /dashboard/invoices
+Ôö£ ãÆ /dashboard/invoices/[id]/edit
+Ôö£ Ôùï /dashboard/invoices/create
+Ôö£ ãÆ /dashboard/profile
+Ôö£ ãÆ /dashboard/settings
+Ôö£ Ôùï /login
+Ôö£ Ôùï /opengraph-image.png
+Ôö£ ãÆ /query
+Ôö£ ãÆ /seed
+Ôöö Ôùï /sign-up
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

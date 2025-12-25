@@ -5,7 +5,7 @@ import { updateSettings } from '@/app/lib/actions-user';
 import { Button } from '@/app/ui/button';
 import { BuildingLibraryIcon, BellIcon } from '@heroicons/react/24/outline';
 
-export default function SettingsForm({ settings }) {
+export default function SettingsForm({ settings }: { settings: any }) {
     const initialState = { message: '', errors: {} };
     const [state, dispatch] = useActionState(updateSettings, initialState);
 

@@ -131,7 +131,7 @@ export async function fetchGroups(query: string = '') {
       GROUP BY g.id, g.name, g.amount, g.interval, g.start_date, g.max_members
       ORDER BY g.start_date DESC
     `;
-        return groups.map(g => ({
+        return groups.map((g: any) => ({
             ...g,
             amount: g.amount / 100,
             member_count: Number(g.member_count),
@@ -159,7 +159,7 @@ export async function fetchUserGroups() {
             WHERE u.email = ${session.user.email}
             ORDER BY g.start_date DESC
         `;
-        return groups.map(g => ({
+        return groups.map((g: any) => ({
             ...g,
             amount: Number(g.amount) / 100,
             member_count: Number(g.member_count),
@@ -193,7 +193,7 @@ export async function fetchAvailableGroups() {
             AND g.status != 'disbanded'
             ORDER BY g.start_date DESC
         `;
-        return groups.map(g => ({
+        return groups.map((g: any) => ({
             ...g,
             amount: Number(g.amount) / 100,
             member_count: Number(g.member_count),
@@ -234,7 +234,7 @@ export async function fetchGroupDetails(id: string) {
 
         // Calculate Stats
         let totalCollected = 0;
-        contributions.forEach(c => {
+        contributions.forEach((c: any) => {
             totalCollected += Number(c.amount);
         });
 
@@ -243,7 +243,7 @@ export async function fetchGroupDetails(id: string) {
         // The previous logic accumulated total per member.
 
         const memberStats = new Map();
-        contributions.forEach(c => {
+        contributions.forEach((c: any) => {
             const current = memberStats.get(c.user_id) || 0;
             memberStats.set(c.user_id, current + Number(c.amount));
         });
@@ -255,7 +255,7 @@ export async function fetchGroupDetails(id: string) {
         return {
             ...group,
             amount: group.amount / 100, // Convert cents to dollars for UI
-            members: members.map(m => ({
+            members: members.map((m: any) => ({
                 ...m,
                 total_contributed: (memberStats.get(m.id) || 0) / 100
             })),
@@ -290,7 +290,7 @@ export async function recordContribution(groupId: string, userId: string, amount
         const date = new Date().toISOString().split('T')[0];
 
         // Transaction: Check Balance -> Deduct -> Record
-        await sql.begin(async (sql) => {
+        await sql.begin(async (sql: any) => {
             // Check Balance
             const user = await sql`SELECT wallet_balance FROM users WHERE id = ${userId}`;
             if (!user || user.length === 0) throw new Error('User not found');

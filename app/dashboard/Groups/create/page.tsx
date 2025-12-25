@@ -103,17 +103,7 @@ export default function Page() {
                         />
                         {state?.errors?.start_date && <p className="text-red-500 text-sm mt-1">{state.errors.start_date[0]}</p>}
                     </div>
-                    <div>
-                        <label htmlFor="end_date" className="mb-2 block text-sm font-medium">End Date</label>
-                        <input
-                            id="end_date"
-                            name="end_date"
-                            type="date"
-                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
-                            required
-                        />
-                        {state?.errors?.end_date && <p className="text-red-500 text-sm mt-1">{state.errors.end_date[0]}</p>}
-                    </div>
+                    {/* End Date is calculated automatically based on start date and duration */}
                 </div>
 
                 <div className="flex items-center gap-4 pt-4">

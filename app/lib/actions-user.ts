@@ -11,7 +11,7 @@ const UpdateSettingsSchema = z.object({
     notifications_enabled: z.coerce.boolean(),
 });
 
-export async function updateSettings(prevState: any, formDataRaw: FormData | any) {
+export async function updateSettings(prevState: any, formDataRaw?: FormData | any) {
     // Robust argument handling: find which argument is FormData
     const formData = (prevState instanceof FormData ? prevState : formDataRaw);
 

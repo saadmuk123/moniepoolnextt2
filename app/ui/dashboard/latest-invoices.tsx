@@ -6,7 +6,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { fetchLatestInvoices } from '@/app/lib/data';
 
 
-export default async function LatestInvoices(){
+export default async function LatestInvoices() {
   const latestInvoices = await fetchLatestInvoices();
 
   return (
@@ -18,7 +18,7 @@ export default async function LatestInvoices(){
         {/* NOTE: Uncomment this code in Chapter 7 */}
 
         <div className="bg-white px-6">
-          {latestInvoices.map((invoice, i) => {
+          {latestInvoices.map((invoice: any, i: number) => {
             return (
               <div
                 key={invoice.id}

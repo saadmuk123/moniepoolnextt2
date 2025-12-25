@@ -188,7 +188,7 @@ async function seedGroups() {
 
 export async function GET() {
   try {
-    const result = await sql.begin((sql) => [
+    const result = await sql.begin((sql: any) => [
       seedUsers(),
       seedCustomers(),
       seedInvoices(),
