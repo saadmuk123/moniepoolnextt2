@@ -222,7 +222,7 @@ export async function fetchUserProfile(email: string) {
   console.log('Fetching user profile for:', email);
   try {
     const userResult = await sql`
-        SELECT id, name, email, wallet_balance, bank_name, account_number, notifications_enabled 
+        SELECT id, name, email, wallet_balance, bank_name, account_number, notifications_enabled, status
         FROM users 
         WHERE email=${email}
     `;
@@ -258,7 +258,7 @@ export async function fetchUserProfile(email: string) {
         amount: Number(a.amount) / 100,
         date: new Date(a.date).toLocaleDateString()
       })),
-      currency: 'USD'
+      currency: 'NGN'
     };
   } catch (error) {
     console.error('Detailed Error in fetchUserProfile:', error);

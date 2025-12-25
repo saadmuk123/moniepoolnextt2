@@ -3,6 +3,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { Button } from '@/app/ui/button';
 import { auth } from '@/auth';
 import { BuildingLibraryIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ThemeToggle } from '@/app/ui/theme-toggle'; // Import ThemeToggle
 
 export default async function Page() {
     const session = await auth();
@@ -17,6 +18,17 @@ export default async function Page() {
             <h1 className={`${lusitana.className} text-2xl mb-8`}>Account Settings</h1>
 
             <div className="grid gap-8">
+                {/* Appearance Section */}
+                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
+                            <p className="text-sm text-gray-500 dark:text-slate-400">Customize how the dashboard looks on your device.</p>
+                        </div>
+                        <ThemeToggle />
+                    </div>
+                </div>
+
                 {/* Bank Settings Section */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">

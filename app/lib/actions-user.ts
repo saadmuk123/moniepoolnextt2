@@ -11,11 +11,17 @@ const UpdateSettingsSchema = z.object({
     notifications_enabled: z.coerce.boolean(),
 });
 
-export async function updateSettings(prevState: any, formData: FormData) {
+export async function updateSettings(prevState: any, formDataRaw: FormData | any) {
+    // Robust argument handling: find which argument is FormData
+    const formData = (prevState instanceof FormData ? prevState : formDataRaw);
+
+    // Debug log to confirm fix (optional, can be removed later)
+    // console.log('Resolved FormData:', formData);
+
     const validatedFields = UpdateSettingsSchema.safeParse({
-        bank_name: formData.get('bank_name'),
-        account_number: formData.get('account_number'),
-        notifications_enabled: formData.get('notifications_enabled') === 'on',
+        bank_name: formData?.get('bank_name'),
+        account_number: formData?.get('account_number'),
+        notifications_enabled: formData?.get('notifications_enabled') === 'on',
     });
 
     if (!validatedFields.success) {

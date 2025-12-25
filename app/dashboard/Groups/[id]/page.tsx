@@ -33,7 +33,7 @@ export default async function Page({ params }) {
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                             <BanknotesIcon className="h-4 w-4" />
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(group.amount)} / {group.interval}
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(group.amount)} / {group.interval}
                         </div>
                         <div className="flex items-center gap-1">
                             <UserGroupIcon className="h-4 w-4" />
@@ -71,7 +71,7 @@ export default async function Page({ params }) {
                         <h3 className="ml-2 text-sm font-medium">Total Collected (Lifetime)</h3>
                     </div>
                     <p className="truncate rounded-xl bg-white px-4 py-8 text-center text-2xl font-bold text-gray-900 border border-gray-100">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(stats?.totalCollected || 0)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(stats?.totalCollected || 0)}
                     </p>
                 </div>
             </div>
@@ -109,7 +109,7 @@ export default async function Page({ params }) {
                                         </span>
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3 font-medium">
-                                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(member.total_contributed || 0)}
+                                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(member.total_contributed || 0)}
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3">
                                         <span className="text-sm text-gray-500">

@@ -22,10 +22,10 @@ export default async function CardWrapper({ data }: { data?: any }) {
 
   const { walletBalance, totalSavings, nextPayout, joinedGroups } = data;
 
-  const formattedWallet = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(walletBalance / 100);
-  const formattedSavings = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalSavings / 100);
-  const formattedPayout = nextPayout?.date
-    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(nextPayout.amount / 100)
+  const formattedWallet = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(walletBalance / 100);
+  const formattedSavings = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(totalSavings / 100);
+  const formattedPayout = nextPayout
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(nextPayout.amount / 100)
     : '$0.00';
 
   const payoutDate = nextPayout?.date
@@ -56,18 +56,18 @@ export function Card({
   const Icon = iconMap[type];
 
   return (
-    <div className="rounded-xl bg-gray-50 p-2 shadow-sm border border-gray-100">
+    <div className="rounded-xl bg-gray-50 p-2 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
       <div className="flex p-4">
-        {Icon ? <Icon className="h-5 w-5 text-gray-700" /> : null}
-        <h3 className="ml-2 text-sm font-medium">{title}</h3>
+        {Icon ? <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" /> : null}
+        <h3 className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">{title}</h3>
       </div>
       <p
         className={`${lusitana.className}
-          truncate rounded-xl bg-white px-4 py-8 text-center text-2xl text-gray-900`}
+          truncate rounded-xl bg-white px-4 py-8 text-center text-2xl text-gray-900 dark:bg-gray-900 dark:text-white`}
       >
         {value}
       </p>
-      {subtext && <p className="text-xs text-center text-gray-500 mt-2 pb-2">{subtext}</p>}
+      {subtext && <p className="text-xs text-center text-gray-500 mt-2 pb-2 dark:text-gray-400">{subtext}</p>}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import sql from '../lib/db';
+import { users, invoices, customers, revenue } from '../lib/placeholder-data';
 
 async function seedUsers() {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -31,6 +32,9 @@ async function seedUsers() {
         END IF;
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='notifications_enabled') THEN
              ALTER TABLE users ADD COLUMN notifications_enabled BOOLEAN DEFAULT TRUE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='status') THEN
+             ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'active';
         END IF;
     END
     $$;
@@ -153,6 +157,9 @@ async function seedGroups() {
         END IF;
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='groups' AND column_name='end_date') THEN
             ALTER TABLE groups ADD COLUMN end_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='groups' AND column_name='status') THEN
+             ALTER TABLE groups ADD COLUMN status VARCHAR(50) DEFAULT 'active';
         END IF;
     END
     $$;

@@ -10,7 +10,7 @@ export async function fetchDashboardData() {
         if (!session?.user?.email) throw new Error('Not authenticated');
         console.log('User authenticated:', session.user.email);
 
-        const userResult = await sql`SELECT id, wallet_balance FROM users WHERE email = ${session.user.email}`;
+        const userResult = await sql`SELECT id, name, role, wallet_balance FROM users WHERE email = ${session.user.email}`;
         const user = userResult[0];
         if (!user) {
             console.error('User not found for email:', session.user.email);
@@ -114,6 +114,8 @@ export async function fetchDashboardData() {
         }
 
         return {
+            userName: user.name, // Add user name to response
+            role: user.role, // Add role to response
             walletBalance: Number(user.wallet_balance),
             totalSavings: totalStatSavings,
             joinedGroups: joinedGroups.map((g) => ({
@@ -135,35 +137,8 @@ export async function fetchDashboardData() {
     } catch (error: any) {
         console.error('Detailed Error in fetchDashboardData:', error);
 
-        // MOCK DATA FALLBACK
         if (error.code === 'ETIMEDOUT' || error.code === 'CONNECT_TIMEOUT') {
-            console.warn('Database connection failed. Falling back to MOCK DATA.');
-            const { mockJoinedGroups, mockContributions, mockWalletBalance } = await import('./mock-data');
-
-            // Calculate mock stats (simplified version of the main logic)
-            let totalStatSavings = 0;
-            mockContributions.forEach((c: any) => totalStatSavings += c.amount);
-
-            const now = new Date();
-
-            // Simple next payout mock
-            const nextPayoutDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
-
-            return {
-                walletBalance: mockWalletBalance,
-                totalSavings: totalStatSavings,
-                joinedGroups: mockJoinedGroups.map((g: any) => ({
-                    ...g,
-                    amount: Number(g.amount),
-                    member_count: Number(g.member_count)
-                })),
-                nextPayout: {
-                    date: nextPayoutDate,
-                    amount: 1000,
-                    groupName: 'Mock Vacation Fund'
-                },
-                contributions: mockContributions
-            };
+            throw new Error('Database connection timed out. Please check your internet connection or firewall settings.');
         }
         throw error;
     }

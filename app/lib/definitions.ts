@@ -7,6 +7,9 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  role: 'admin' | 'user';
+  wallet_balance: number;
+  status: 'active' | 'suspended';
 };
 
 export type Customer = {

@@ -53,8 +53,19 @@ export default async function Page() {
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
                                 <p className="text-sm text-gray-500">{user.email}</p>
-                                <div className="mt-2 inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
-                                    Verified Member
+                                <div className="mt-2 flex items-center gap-2">
+                                    <div className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                        Verified Member
+                                    </div>
+                                    {user.status === 'suspended' ? (
+                                        <div className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-600/20">
+                                            Suspended
+                                        </div>
+                                    ) : (
+                                        <div className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                                            Active
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -68,7 +79,7 @@ export default async function Page() {
                         <WalletIcon className="h-5 w-5" />
                     </div>
                     <div className="mt-4 text-3xl font-bold">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(user.balance)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(user.balance)}
                     </div>
                     <p className="mt-1 text-xs opacity-70">Available for withdrawal</p>
                 </div>
@@ -80,7 +91,7 @@ export default async function Page() {
                         <BanknotesIcon className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="mt-4 text-2xl font-bold text-gray-900">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(user.total_contributed)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(user.total_contributed)}
                     </div>
                     <p className="mt-1 text-xs text-gray-500">Lifetime savings</p>
                 </div>
@@ -137,7 +148,7 @@ export default async function Page() {
                                                 </p>
                                             </div>
                                             <div className="text-sm font-medium text-gray-900">
-                                                -{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(activity.amount)}
+                                                -{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(activity.amount)}
                                             </div>
                                         </div>
                                     </li>

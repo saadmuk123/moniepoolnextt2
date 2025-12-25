@@ -143,6 +143,68 @@ export async function fetchGroups(query: string = '') {
     }
 }
 
+export async function fetchUserGroups() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return [];
+
+        const groups = await sql`
+            SELECT 
+                g.id, g.name, g.amount, g.interval, g.start_date, g.max_members,
+                (SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id = g.id) as member_count,
+                gm.status as member_status
+            FROM groups g
+            JOIN group_members gm ON g.id = gm.group_id
+            JOIN users u ON gm.user_id = u.id
+            WHERE u.email = ${session.user.email}
+            ORDER BY g.start_date DESC
+        `;
+        return groups.map(g => ({
+            ...g,
+            amount: Number(g.amount) / 100,
+            member_count: Number(g.member_count),
+            max_members: g.max_members || 0
+        }));
+    } catch (error) {
+        console.error('Failed to fetch user groups:', error);
+        return [];
+    }
+}
+
+export async function fetchAvailableGroups() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return [];
+
+        // Get User ID first
+        const userRes = await sql`SELECT id FROM users WHERE email = ${session.user.email}`;
+        const userId = userRes[0]?.id;
+
+        if (!userId) return [];
+
+        const groups = await sql`
+            SELECT 
+                g.id, g.name, g.amount, g.interval, g.start_date, g.max_members,
+                (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id) as member_count
+            FROM groups g
+            WHERE g.id NOT IN (
+                SELECT group_id FROM group_members WHERE user_id = ${userId}
+            )
+            AND g.status != 'disbanded'
+            ORDER BY g.start_date DESC
+        `;
+        return groups.map(g => ({
+            ...g,
+            amount: Number(g.amount) / 100,
+            member_count: Number(g.member_count),
+            max_members: g.max_members || 0
+        }));
+    } catch (error) {
+        console.error('Failed to fetch available groups:', error);
+        return [];
+    }
+}
+
 export async function fetchGroupDetails(id: string) {
     try {
         const [groupResult, members, contributions] = await Promise.all([
