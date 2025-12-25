@@ -9,7 +9,7 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 
 export async function fetchRevenue() {
   try {
@@ -210,9 +210,28 @@ export async function fetchFilteredCustomers(query: string) {
       total_paid: formatCurrency(customer.total_paid),
     }));
 
+
     return customers;
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+export async function fetchUserProfile(email: string) {
+  try {
+    const user = await sql`SELECT id, name, email, wallet_balance FROM users WHERE email=${email}`;
+    // Mock bank details since they don't exist in DB
+    const bankDetails = {
+      accountNumber: '12345678',
+      sortCode: '12-34-56',
+      status: 'Active',
+      balance: (user[0].wallet_balance || 0) / 100, // Use actual wallet balance
+      currency: 'USD'
+    };
+    return { ...user[0], ...bankDetails };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch user profile.');
   }
 }

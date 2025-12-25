@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import postgres from 'postgres';
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: { rejectUnauthorized: false } });
 
 async function seedUsers() {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -11,16 +11,34 @@ async function seedUsers() {
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
+      password TEXT NOT NULL,
+      wallet_balance INT DEFAULT 500000
     );
   `;
+
+  // Ensure column exists for existing tables
+  await sql`
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='wallet_balance') THEN
+            ALTER TABLE users ADD COLUMN wallet_balance INT DEFAULT 500000;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='role') THEN
+             ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'customer';
+        END IF;
+    END
+    $$;
+  `;
+
+  // Force Admin for specific user (Safe to run multiple times)
+  await sql`UPDATE users SET role = 'admin' WHERE email = 'user@nextmail.com';`;
 
   const insertedUsers = await Promise.all(
     users.map(async (user) => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
+        INSERT INTO users (id, name, email, password, wallet_balance)
+        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword}, 500000)
         ON CONFLICT (id) DO NOTHING;
       `;
     }),
@@ -101,6 +119,60 @@ async function seedRevenue() {
   return insertedRevenue;
 }
 
+async function seedGroups() {
+  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS groups (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      amount INT NOT NULL,
+      interval VARCHAR(50) NOT NULL,
+      start_date DATE NOT NULL,
+      description TEXT,
+      max_members INT,
+      end_date DATE
+    );
+  `;
+
+  // Ensure columns exist for existing tables
+  await sql`
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='groups' AND column_name='description') THEN
+            ALTER TABLE groups ADD COLUMN description TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='groups' AND column_name='max_members') THEN
+            ALTER TABLE groups ADD COLUMN max_members INT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='groups' AND column_name='end_date') THEN
+            ALTER TABLE groups ADD COLUMN end_date DATE;
+        END IF;
+    END
+    $$;
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS group_members (
+      group_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      position INT NOT NULL,
+      status VARCHAR(50) NOT NULL,
+      PRIMARY KEY (group_id, user_id)
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS contributions (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      group_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      amount INT NOT NULL,
+      date DATE NOT NULL
+    );
+  `;
+}
+
 export async function GET() {
   try {
     const result = await sql.begin((sql) => [
@@ -108,6 +180,7 @@ export async function GET() {
       seedCustomers(),
       seedInvoices(),
       seedRevenue(),
+      seedGroups(),
     ]);
 
     return Response.json({ message: 'Database seeded successfully' });

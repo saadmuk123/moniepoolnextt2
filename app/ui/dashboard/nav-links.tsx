@@ -4,6 +4,9 @@ import {
   UserGroupIcon,
   HomeIcon,
   DocumentDuplicateIcon,
+  WrenchIcon,
+  UserCircleIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 
 import Link from 'next/link';
@@ -22,6 +25,13 @@ const links = [
     icon: DocumentDuplicateIcon,
   },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
+
+  { name: 'Groups', href: '/dashboard/groups', icon: UserGroupIcon },
+  { name: 'Settings', href: '/dashboard/settings', icon: WrenchIcon },
+  { name: 'Profile', href: '/dashboard/profile', icon: UserCircleIcon },
+  { name: 'Help', href: '/dashboard/help', icon: QuestionMarkCircleIcon },
+
+
 ];
 
 export default function NavLinks() {
@@ -33,7 +43,7 @@ export default function NavLinks() {
       {links.map((link) => {
         const LinkIcon = link.icon;
         return (
-       <Link
+          <Link
             key={link.name}
             href={link.href}
             className={clsx(
